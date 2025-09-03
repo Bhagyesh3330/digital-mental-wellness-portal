@@ -1,0 +1,151 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* Netflix Sans Font Import */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+/* Netflix-inspired custom styles */
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  
+  body {
+    background-color: #141414;
+    color: #ffffff;
+    font-weight: 400;
+    line-height: 1.6;
+  }
+  
+  * {
+    box-sizing: border-box;
+  }
+}
+
+@layer components {
+  /* Netflix-style button */
+  .btn-netflix {
+    @apply bg-netflix-red hover:bg-netflix-red-dark text-white font-semibold py-3 px-8 rounded-sm transition-all duration-200 transform hover:scale-105 active:scale-95;
+  }
+  
+  .btn-netflix-outline {
+    @apply border-2 border-netflix-red text-netflix-red hover:bg-netflix-red hover:text-white font-semibold py-3 px-8 rounded-sm transition-all duration-200;
+  }
+  
+  .btn-wellness {
+    @apply bg-wellness-primary hover:bg-indigo-700 text-white font-medium py-2.5 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-lg;
+  }
+  
+  .btn-wellness-outline {
+    @apply border-2 border-wellness-primary text-wellness-primary hover:bg-wellness-primary hover:text-white font-medium py-2.5 px-6 rounded-lg transition-all duration-200;
+  }
+  
+  /* Netflix-style input */
+  .input-netflix {
+    @apply bg-netflix-gray-dark border border-netflix-gray-medium text-white rounded-sm px-4 py-3 focus:outline-none focus:border-white transition-colors duration-200;
+  }
+  
+  /* Card components */
+  .card-netflix {
+    @apply bg-netflix-black-light border border-netflix-gray-dark rounded-lg p-6 shadow-xl backdrop-blur-sm;
+  }
+  
+  .card-wellness {
+    @apply bg-gradient-to-br from-netflix-black-light to-netflix-gray-dark border border-netflix-gray-medium rounded-xl p-6 shadow-2xl backdrop-blur-md;
+  }
+  
+  /* Page transitions */
+  .page-slide-enter {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  
+  .page-slide-enter-active {
+    transform: translateX(0%);
+    opacity: 1;
+    transition: transform 0.5s ease-out, opacity 0.5s ease-out;
+  }
+  
+  .page-slide-exit {
+    transform: translateX(0%);
+    opacity: 1;
+  }
+  
+  .page-slide-exit-active {
+    transform: translateX(-100%);
+    opacity: 0;
+    transition: transform 0.5s ease-out, opacity 0.5s ease-out;
+  }
+  
+  /* Mood level colors */
+  .mood-very-low {
+    @apply bg-wellness-mood-very-low;
+  }
+  
+  .mood-low {
+    @apply bg-wellness-mood-low;
+  }
+  
+  .mood-neutral {
+    @apply bg-wellness-mood-neutral;
+  }
+  
+  .mood-good {
+    @apply bg-wellness-mood-good;
+  }
+  
+  .mood-excellent {
+    @apply bg-wellness-mood-excellent;
+  }
+  
+  /* Loading spinner */
+  .spinner {
+    @apply animate-spin rounded-full border-4 border-netflix-gray-medium border-t-wellness-primary;
+  }
+  
+  /* Glowing effect for important elements */
+  .glow-wellness {
+    box-shadow: 0 0 20px rgba(79, 70, 229, 0.3);
+  }
+  
+  .glow-netflix {
+    box-shadow: 0 0 20px rgba(229, 9, 20, 0.3);
+  }
+}
+
+@layer utilities {
+  /* Scrollbar styling */
+  .scrollbar-netflix::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .scrollbar-netflix::-webkit-scrollbar-track {
+    background: #2F2F2F;
+    border-radius: 4px;
+  }
+  
+  .scrollbar-netflix::-webkit-scrollbar-thumb {
+    background: #555555;
+    border-radius: 4px;
+  }
+  
+  .scrollbar-netflix::-webkit-scrollbar-thumb:hover {
+    background: #B3B3B3;
+  }
+  
+  /* Text gradients */
+  .text-gradient-wellness {
+    background: linear-gradient(135deg, #4F46E5, #06B6D4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .text-gradient-netflix {
+    background: linear-gradient(135deg, #E50914, #B81D24);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
