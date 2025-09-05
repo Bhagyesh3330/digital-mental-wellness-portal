@@ -26,12 +26,6 @@ A comprehensive mental health and wellness platform designed specifically for ho
 - **📚 Resource Library**: Create and share wellness resources and exercises
 - **💼 Professional Profile**: Manage credentials, specializations, and availability
 
-### 👨‍💼 For Administrators
-- **🏢 System Management**: User account creation and role management
-- **📊 Platform Analytics**: Institution-wide mental health statistics and trends
-- **📋 Content Management**: Oversee resources, notifications, and system content
-- **⚙️ System Configuration**: Platform settings and security management
-
 ## 🛠️ Tech Stack
 
 ### Frontend
