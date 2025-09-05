@@ -32,9 +32,18 @@ router.post('/', authenticateToken, goalValidation, async (req, res) => {
       [req.user.id, title, description, target_date]
     );
 
+    const goalData = result.rows[0];
     res.status(201).json({
       message: 'Wellness goal created successfully',
-      goal: result.rows[0]
+      goal: {
+        id: goalData.id,
+        title: goalData.title,
+        description: goalData.description,
+        targetDate: goalData.target_date,
+        isCompleted: goalData.is_completed,
+        progressPercentage: goalData.progress_percentage,
+        createdAt: goalData.created_at
+      }
     });
   } catch (error) {
     console.error('Goal creation error:', error);
@@ -55,10 +64,54 @@ router.get('/user/:userId', authenticateToken, authorizeOwnerOrRole(), async (re
       [userId]
     );
 
-    res.json({ goals: result.rows });
+    // Map database column names to camelCase
+    const goals = result.rows.map(goal => ({
+      id: goal.id,
+      title: goal.title,
+      description: goal.description,
+      targetDate: goal.target_date,
+      isCompleted: goal.is_completed,
+      progressPercentage: goal.progress_percentage,
+      createdAt: goal.created_at,
+      updatedAt: goal.updated_at
+    }));
+
+    res.json({ goals });
   } catch (error) {
     console.error('Goals fetch error:', error);
     res.status(500).json({ error: 'Failed to fetch goals' });
+  }
+});
+
+// Get goals statistics
+router.get('/user/:userId/stats', authenticateToken, authorizeOwnerOrRole(), async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    
+    const result = await query(
+      `SELECT 
+         COUNT(*) as total_goals,
+         COUNT(*) FILTER (WHERE is_completed = true) as completed_goals,
+         COUNT(*) FILTER (WHERE is_completed = false AND progress_percentage > 0) as in_progress,
+         COUNT(*) FILTER (WHERE is_completed = false AND target_date < CURRENT_DATE) as overdue,
+         AVG(progress_percentage) as avg_progress
+       FROM wellness_goals 
+       WHERE user_id = $1`,
+      [userId]
+    );
+
+    const stats = result.rows[0];
+    
+    res.json({
+      totalGoals: parseInt(stats.total_goals) || 0,
+      completedGoals: parseInt(stats.completed_goals) || 0,
+      inProgress: parseInt(stats.in_progress) || 0,
+      overdue: parseInt(stats.overdue) || 0,
+      averageProgress: parseFloat(stats.avg_progress) || 0
+    });
+  } catch (error) {
+    console.error('Goals stats fetch error:', error);
+    res.status(500).json({ error: 'Failed to fetch goals statistics' });
   }
 });
 

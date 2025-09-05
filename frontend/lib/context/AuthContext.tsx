@@ -2,7 +2,6 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, LoginCredentials, RegisterData } from '@/types';
-import { authApi } from '@/lib/api/auth';
 import Cookies from 'js-cookie';
 
 interface AuthContextType {
@@ -31,53 +30,67 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for stored token on mount
-    const storedToken = Cookies.get('auth_token');
-    if (storedToken) {
-      setToken(storedToken);
-      // Fetch user profile
-      fetchUserProfile(storedToken);
-    } else {
-      setIsLoading(false);
-    }
-  }, []);
-
-  const fetchUserProfile = async (authToken: string) => {
-    try {
-      const response = await authApi.getProfile(authToken);
-      if (response.success && response.data) {
-        setUser(response.data);
-      } else {
-        // Invalid token, clear it
-        Cookies.remove('auth_token');
-        setToken(null);
+    const checkAuthStatus = async () => {
+      // Check for stored token on mount
+      const storedToken = Cookies.get('auth_token');
+      if (storedToken) {
+        setToken(storedToken);
+        
+        try {
+          // Verify token with API
+          const response = await fetch('/api/auth/verify', {
+            headers: {
+              'Authorization': `Bearer ${storedToken}`
+            }
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            setUser(data.user);
+          } else {
+            // Invalid token, clear it
+            Cookies.remove('auth_token');
+            setToken(null);
+          }
+        } catch (error) {
+          console.error('Token verification failed:', error);
+          Cookies.remove('auth_token');
+          setToken(null);
+        }
       }
-    } catch (error) {
-      console.error('Failed to fetch user profile:', error);
-      Cookies.remove('auth_token');
-      setToken(null);
-    } finally {
       setIsLoading(false);
-    }
-  };
+    };
+    
+    checkAuthStatus();
+  }, []);
 
   const login = async (credentials: LoginCredentials) => {
     try {
       setIsLoading(true);
-      const response = await authApi.login(credentials);
       
-      if (response.success && response.data) {
-        const { user, token: newToken } = response.data;
-        setUser(user);
-        setToken(newToken);
-        Cookies.set('auth_token', newToken, { 
-          expires: 1, // 1 day
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(credentials)
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        setUser(data.user);
+        setToken(data.token);
+        
+        Cookies.set('auth_token', data.token, { 
+          expires: 7, // 7 days
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'strict'
         });
+        
         return { success: true };
       } else {
-        return { success: false, error: response.error || 'Login failed' };
+        return { success: false, error: data.error || 'Login failed' };
       }
     } catch (error: any) {
       return { success: false, error: error.message || 'Login failed' };
@@ -85,24 +98,49 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoading(false);
     }
   };
-
   const register = async (data: RegisterData) => {
     try {
       setIsLoading(true);
-      const response = await authApi.register(data);
       
-      if (response.success && response.data) {
-        const { user, token: newToken } = response.data;
-        setUser(user);
-        setToken(newToken);
-        Cookies.set('auth_token', newToken, { 
-          expires: 1,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'strict'
-        });
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+      
+      const responseData = await response.json();
+      
+      if (response.ok && responseData.success) {
+        // Automatically set user and token after successful registration
+        if (responseData.user && responseData.token) {
+          setUser(responseData.user);
+          setToken(responseData.token);
+          
+          Cookies.set('auth_token', responseData.token, { 
+            expires: 7,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict'
+          });
+          
+          // Trigger real-time update for counselor dashboards
+          if (typeof window !== 'undefined') {
+            const event = new CustomEvent('wellness-users-updated', {
+              detail: { 
+                type: 'user_registered', 
+                user: responseData.user, 
+                timestamp: Date.now() 
+              }
+            });
+            window.dispatchEvent(event);
+            console.log('📡 Triggered real-time update for new user registration');
+          }
+        }
+        
         return { success: true };
       } else {
-        return { success: false, error: response.error || 'Registration failed' };
+        return { success: false, error: responseData.error || 'Registration failed' };
       }
     } catch (error: any) {
       return { success: false, error: error.message || 'Registration failed' };
@@ -110,31 +148,48 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoading(false);
     }
   };
-
-  const logout = () => {
-    setUser(null);
-    setToken(null);
-    Cookies.remove('auth_token');
+  const logout = async () => {
+    try {
+      if (token) {
+        await fetch('/api/auth/logout', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Logout API call failed:', error);
+    } finally {
+      setUser(null);
+      setToken(null);
+      Cookies.remove('auth_token');
+    }
   };
 
   const refreshToken = async (): Promise<boolean> => {
     try {
       if (!token) return false;
       
-      const response = await authApi.refreshToken(token);
-      if (response.success && response.data) {
-        const newToken = response.data.token;
-        setToken(newToken);
-        Cookies.set('auth_token', newToken, { 
-          expires: 1,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'strict'
-        });
+      // Verify the current token is still valid
+      const response = await fetch('/api/auth/verify', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setUser(data.user);
         return true;
+      } else {
+        // Invalid token, clear it
+        logout();
+        return false;
       }
-      return false;
     } catch (error) {
       console.error('Token refresh failed:', error);
+      logout();
       return false;
     }
   };

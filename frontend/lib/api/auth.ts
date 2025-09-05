@@ -29,7 +29,19 @@ export const authApi = {
 
   register: async (data: RegisterData): Promise<ApiResponse<{ user: User; token: string }>> => {
     try {
-      const response = await authClient.post('/register', data);
+      // Filter out empty optional fields to avoid validation errors
+      const cleanData = { ...data };
+      if (!cleanData.phone || cleanData.phone.trim() === '') {
+        delete cleanData.phone;
+      }
+      if (!cleanData.hostelName || cleanData.hostelName.trim() === '') {
+        delete cleanData.hostelName;
+      }
+      if (!cleanData.roomNumber || cleanData.roomNumber.trim() === '') {
+        delete cleanData.roomNumber;
+      }
+      
+      const response = await authClient.post('/register', cleanData);
       return {
         success: true,
         data: response.data,

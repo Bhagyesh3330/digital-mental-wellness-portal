@@ -2,6 +2,16 @@ import type { Metadata } from 'next'
 import '../styles/globals.css'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from '@/lib/context/AuthContext'
+import { CelebrationAnimation } from '@/components/ui/CelebrationAnimation'
+import { WellnessAnimations } from '@/components/ui/WellnessAnimations'
+// Import debug utilities for browser console access
+import '@/lib/debug-utils'
+import '@/lib/test-data'
+import '@/lib/force-cleanup'
+import '@/lib/registration-debug'
+import '@/lib/test-registration-fix'
+import '@/lib/fix-appointments'
+import '@/lib/direct-appointment-fix'
 
 export const metadata: Metadata = {
   title: 'Digital Mental Wellness Portal',
@@ -23,6 +33,8 @@ export default function RootLayout({
       <body className="font-professional bg-netflix-black min-h-screen">
         <AuthProvider>
           {children}
+          <CelebrationAnimation />
+          <WellnessAnimations />
           <Toaster
             position="top-right"
             toastOptions={{

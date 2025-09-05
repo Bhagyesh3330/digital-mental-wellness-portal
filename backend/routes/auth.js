@@ -14,9 +14,14 @@ const registerValidation = [
   body('firstName').trim().isLength({ min: 2, max: 50 }),
   body('lastName').trim().isLength({ min: 2, max: 50 }),
   body('role').isIn(['student', 'counselor', 'admin']),
-  body('phone').optional().isMobilePhone(),
+  body('phone').optional().isLength({ min: 10, max: 15 }).matches(/^[+]?[0-9\s\-\(\)]+$/),
   body('hostelName').optional().trim().isLength({ max: 100 }),
-  body('roomNumber').optional().trim().isLength({ max: 10 })
+  body('roomNumber').optional().trim().isLength({ max: 10 }),
+  // Counselor-specific validation
+  body('profileData.specialization').if(body('role').equals('counselor')).notEmpty().withMessage('Specialization is required for counselors'),
+  body('profileData.licenseNumber').if(body('role').equals('counselor')).notEmpty().withMessage('License number is required for counselors'),
+  body('profileData.yearsOfExperience').if(body('role').equals('counselor')).isInt({ min: 0 }).withMessage('Years of experience must be a valid number'),
+  body('profileData.qualifications').if(body('role').equals('counselor')).notEmpty().withMessage('Qualifications are required for counselors')
 ];
 
 const loginValidation = [
@@ -24,8 +29,17 @@ const loginValidation = [
   body('password').notEmpty()
 ];
 
+// Clean empty optional fields before validation
+const cleanOptionalFields = (req, res, next) => {
+  // Convert empty strings to null/undefined for optional fields
+  if (req.body.phone === '') delete req.body.phone;
+  if (req.body.hostelName === '') delete req.body.hostelName;
+  if (req.body.roomNumber === '') delete req.body.roomNumber;
+  next();
+};
+
 // Register new user
-router.post('/register', registerValidation, async (req, res) => {
+router.post('/register', cleanOptionalFields, registerValidation, async (req, res) => {
   try {
     // Check validation errors
     const errors = validationResult(req);
@@ -118,14 +132,19 @@ router.post('/register', registerValidation, async (req, res) => {
       { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
     );
 
+    const successMessage = role === 'counselor' 
+      ? 'Registration successful! Your counselor application is pending admin approval.'
+      : 'User registered successfully';
+
     res.status(201).json({
-      message: 'User registered successfully',
+      message: successMessage,
       user: {
         id: result.id,
         email: result.email,
         firstName: result.first_name,
         lastName: result.last_name,
-        role: result.role
+        role: result.role,
+        needsApproval: role === 'counselor'
       },
       token
     });

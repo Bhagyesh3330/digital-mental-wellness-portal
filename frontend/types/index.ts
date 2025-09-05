@@ -3,10 +3,18 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
-  role: 'student' | 'counselor' | 'admin';
+  role: 'student' | 'counselor';
   phone?: string;
   hostelName?: string;
   roomNumber?: string;
+  course?: string;
+  yearOfStudy?: number;
+  studentId?: string;
+  dateOfBirth?: string;
+  specialization?: string;
+  experience?: string;
+  licenseNumber?: string;
+  qualifications?: string;
   isActive: boolean;
   createdAt: string;
 }
@@ -21,19 +29,19 @@ export interface RegisterData {
   password: string;
   firstName: string;
   lastName: string;
-  role: 'student' | 'counselor' | 'admin';
+  role: 'student' | 'counselor';
   phone?: string;
   hostelName?: string;
   roomNumber?: string;
+  course?: string;
+  yearOfStudy?: number;
+  dateOfBirth?: string;
+  studentId?: string;
+  specialization?: string;
+  experience?: string;
   profileData?: {
-    studentId?: string;
-    course?: string;
-    yearOfStudy?: number;
-    dateOfBirth?: string;
     guardianContact?: string;
     licenseNumber?: string;
-    specialization?: string;
-    yearsOfExperience?: number;
     qualifications?: string;
     department?: string;
     permissions?: Record<string, string>;
@@ -105,6 +113,7 @@ export interface Notification {
 }
 
 export interface ApiResponse<T> {
+  success?: boolean;
   message?: string;
   data?: T;
   error?: string;

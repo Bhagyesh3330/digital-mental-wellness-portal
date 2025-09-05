@@ -125,8 +125,8 @@ const RegisterPage = () => {
                       <label className="block text-sm font-medium text-netflix-gray-light mb-3">
                         I am a...
                       </label>
-                      <div className="grid grid-cols-3 gap-2">
-                        {(['student', 'counselor', 'admin'] as const).map((role) => (
+                      <div className="grid grid-cols-2 gap-2">
+                        {(['student', 'counselor'] as const).map((role) => (
                           <motion.label
                             key={role}
                             whileHover={{ scale: 1.02 }}
@@ -312,6 +312,89 @@ const RegisterPage = () => {
                             />
                           </div>
                         </div>
+                      </>
+                    )}
+
+                    {watchedRole === 'counselor' && (
+                      <>
+                        <div>
+                          <label className="block text-sm font-medium text-netflix-gray-light mb-2">
+                            Specialization *
+                          </label>
+                          <select
+                            {...register('specialization', { 
+                              required: watchedRole === 'counselor' ? 'Specialization is required' : false 
+                            })}
+                            className="input-netflix w-full"
+                          >
+                            <option value="">Select your specialization</option>
+                            <option value="Anxiety & Stress Management">Anxiety & Stress Management</option>
+                            <option value="Depression & Mood Disorders">Depression & Mood Disorders</option>
+                            <option value="Academic Counseling">Academic Counseling</option>
+                            <option value="Career Counseling">Career Counseling</option>
+                            <option value="Relationship Counseling">Relationship Counseling</option>
+                            <option value="Trauma & PTSD">Trauma & PTSD</option>
+                            <option value="Addiction Counseling">Addiction Counseling</option>
+                            <option value="Eating Disorders">Eating Disorders</option>
+                            <option value="General Mental Health">General Mental Health</option>
+                            <option value="Other">Other</option>
+                          </select>
+                          {errors.specialization && (
+                            <p className="text-netflix-red text-sm mt-1">{errors.specialization.message}</p>
+                          )}
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-netflix-gray-light mb-2">
+                              License Number *
+                            </label>
+                            <input
+                              {...register('profileData.licenseNumber', {
+                                required: watchedRole === 'counselor' ? 'License number is required' : false
+                              })}
+                              className="input-netflix w-full"
+                              placeholder="LIC123456"
+                            />
+                            {errors.profileData?.licenseNumber && (
+                              <p className="text-netflix-red text-sm mt-1">{errors.profileData.licenseNumber.message}</p>
+                            )}
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-netflix-gray-light mb-2">
+                              Experience *
+                            </label>
+                            <input
+                              {...register('experience', {
+                                required: watchedRole === 'counselor' ? 'Experience is required' : false
+                              })}
+                              type="text"
+                              className="input-netflix w-full"
+                              placeholder="e.g., 5 years in clinical psychology"
+                            />
+                            {errors.experience && (
+                              <p className="text-netflix-red text-sm mt-1">{errors.experience.message}</p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-netflix-gray-light mb-2">
+                            Qualifications *
+                          </label>
+                          <textarea
+                            {...register('profileData.qualifications', {
+                              required: watchedRole === 'counselor' ? 'Qualifications are required' : false
+                            })}
+                            rows={3}
+                            className="input-netflix w-full resize-none"
+                            placeholder="List your relevant qualifications, certifications, and degrees..."
+                          />
+                          {errors.profileData?.qualifications && (
+                            <p className="text-netflix-red text-sm mt-1">{errors.profileData.qualifications.message}</p>
+                          )}
+                        </div>
+
                       </>
                     )}
 
